@@ -5,18 +5,21 @@ from simple_rtmw.detection.post import multiclass_nms
 
 
 class YOLOX(BaseTool):
-
-    def __init__(self,
-                 onnx_model: str,
-                 model_input_size: tuple = (640, 640),
-                 nms_thr=0.45,
-                 score_thr=0.7,
-                 backend: str = 'onnxruntime',
-                 device: str = 'cpu'):
-        super().__init__(onnx_model,
-                         model_input_size,
-                         backend=backend,
-                         device=device)
+    def __init__(
+        self,
+        onnx_model: str,
+        model_input_size: tuple = (640, 640),
+        nms_thr: float = 0.45,
+        score_thr: float = 0.7,
+        backend: str = 'onnxruntime',
+        device: str = 'cpu',
+    ):
+        super().__init__(
+            onnx_model,
+            model_input_size,
+            backend=backend,
+            device=device,
+        )
         self.nms_thr = nms_thr
         self.score_thr = score_thr
 
@@ -27,34 +30,41 @@ class YOLOX(BaseTool):
         return results
 
     def preprocess(self, img: np.ndarray):
-        """Do preprocessing for RTMPose model inference.
+        """Preprocessing for inference.
 
         Args:
-            img (np.ndarray): Input image in shape.
+            img: Input image.
 
         Returns:
             tuple:
             - resized_img (np.ndarray): Preprocessed image.
-            - center (np.ndarray): Center of image.
-            - scale (np.ndarray): Scale of image.
+            - ratio (float): Ratio of preprocessing.
         """
-        if len(img.shape) == 3:
-            padded_img = np.ones(
-                (self.model_input_size[0], self.model_input_size[1], 3),
-                dtype=np.uint8) * 114
-        else:
-            padded_img = np.ones(self.model_input_size, dtype=np.uint8) * 114
+        if img.ndim == 2:  # gray image
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        elif img.shape[2] == 4:  # rgba image
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+        else:  # rgb image
+            pass
 
-        ratio = min(self.model_input_size[0] / img.shape[0],
-                    self.model_input_size[1] / img.shape[1])
+        padded_img = np.ones(
+            (self.model_input_size[0], self.model_input_size[1], 3),
+            dtype=np.uint8
+        ) * 114
+
+        ratio = min(
+            self.model_input_size[0] / img.shape[0],
+            self.model_input_size[1] / img.shape[1]
+        )
+        
         resized_img = cv2.resize(
             img,
             (int(img.shape[1] * ratio), int(img.shape[0] * ratio)),
             interpolation=cv2.INTER_LINEAR,
         ).astype(np.uint8)
+        
         padded_shape = (int(img.shape[0] * ratio), int(img.shape[1] * ratio))
         padded_img[:padded_shape[0], :padded_shape[1]] = resized_img
-
         return padded_img, ratio
 
     def postprocess(
