@@ -10,13 +10,11 @@ class YOLOX(BaseTool):
         model_input_size: tuple = (640, 640),
         nms_thr: float = 0.45,
         score_thr: float = 0.7,
-        backend: str = 'onnxruntime',
         device: str = 'cpu',
     ):
         super().__init__(
             onnx_model,
             model_input_size,
-            backend=backend,
             device=device,
         )
         self.nms_thr = nms_thr
