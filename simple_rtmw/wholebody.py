@@ -9,9 +9,9 @@ from simple_rtmw.types import BodyResult, Keypoint, PoseResult
 logger = logging.getLogger(__name__)
 
 CONFIG = {
-    'detector': 'https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip',  # noqa
+    'detector': 'http://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip',
     'detector_input_size': (640, 640),
-    'pose_estimator': 'https://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-x-l_simcc-cocktail14_270e-384x288_20231122.zip',  # noqa
+    'pose_estimator': 'http://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-x-l_simcc-cocktail14_270e-384x288_20231122.zip',  # noqa
     'pose_estimator_input_size': (288, 384),
     'backend': 'onnxruntime',
     'device': 'mps',
