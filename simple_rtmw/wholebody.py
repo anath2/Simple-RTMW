@@ -39,11 +39,11 @@ class Wholebody:
         # Convert to list of bounding boxes
         bboxes = [bbox for bbox in bboxes] if len(bboxes) > 0 else None
         keypoints, scores = self.pose_model(image, bboxes=bboxes)
-
         return keypoints, scores
 
     @staticmethod
     def format_result(keypoints_info: np.ndarray) -> list[PoseResult]:
+        score_threshold = 0.3
 
         def create_null_keypoint(idx: int) -> Keypoint:
             return Keypoint(np.nan, np.nan, 0.0, idx)
