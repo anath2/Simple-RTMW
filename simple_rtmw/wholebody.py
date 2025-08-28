@@ -20,16 +20,16 @@ CONFIG = {
 
 
 class Wholebody:
-    def __init__(self, device: str = 'cpu'):
+    def __init__(self, device: str = 'cpu', models_base_dir: Path = Path('./models')):
         self.det_model = Detector(
             model_url=CONFIG['detector'], 
-            model_base_dir=Path('./models/detector'),   
+            model_base_dir= models_base_dir / 'detector',
             model_input_size=CONFIG['detector_input_size'],
             device=device
         )
         self.pose_model = PoseEstimator(
             model_url=CONFIG['pose_estimator'],
-            model_base_dir=Path('./models/pose_estimator'),
+            model_base_dir=models_base_dir / 'pose_estimator',
             model_input_size=CONFIG['pose_estimator_input_size'],
             device=device
         )
