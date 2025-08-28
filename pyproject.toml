@@ -8,5 +8,29 @@ dependencies = [
     "numpy>=2.3.2",
     "onnxruntime>=1.22.1",
     "opencv-python>=4.11.0.86",
+    "requests>=2.32.5",
     "tqdm>=4.67.1",
+]
+
+[dependency-groups]
+dev = [
+    "debugpy>=1.8.16",
+    "ipykernel>=6.30.1",
+    "pillow>=11.3.0",
+    "pyright>=1.1.404",
+    "pytest>=8.4.1",
+    "ruff>=0.12.9",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["simple_rtmw*"]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not network'"
+markers = [
+    "network: marks tests as requiring network access (run with '-m network')",
 ]
