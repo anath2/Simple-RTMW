@@ -15,10 +15,10 @@ def image() -> np.ndarray:
     return img
 
 
-@pytest.mark.network
-def test_wholebody_e2e(tmp_path, image):
+@pytest.mark.gpu
+def test_wholebody_e2e(image):
     """End-to-end tests for wholebody pose estimation"""
-    whole_body = Wholebody(device='mps', models_base_dir=tmp_path)
+    whole_body = Wholebody(device='mps')
     keypoints, scores = whole_body(image)
     assert isinstance(keypoints, np.ndarray)
     assert isinstance(scores, np.ndarray)

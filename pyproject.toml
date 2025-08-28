@@ -33,4 +33,5 @@ include = ["simple_rtmw*"]
 addopts = "-m 'not network'"
 markers = [
     "network: marks tests as requiring network access (run with '-m network')",
+    "gpu: marks tests as requiring a GPU (run with '-m gpu')",
 ]
