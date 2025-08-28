@@ -45,40 +45,39 @@ class Wholebody:
     @staticmethod
     def format_result(keypoints_info: np.ndarray) -> list[PoseResult]:
 
-        def format_keypoint_part(
-                part: np.ndarray) -> list[Keypoint | None] | None:
-            keypoints = [
-                Keypoint(x, y, score, i) if score >= 0.3 else None
+        def create_null_keypoint(idx: int) -> Keypoint:
+            return Keypoint(np.nan, np.nan, 0.0, idx)
+
+        def format_keypoint_part(part: np.ndarray) -> list[Keypoint]:
+            return [
+                Keypoint(x, y, score, i) if score >= score_threshold 
+                else create_null_keypoint(i)
                 for i, (x, y, score) in enumerate(part)
             ]
-            return (None if all(keypoint is None
-                                for keypoint in keypoints) else keypoints)
 
-        def total_score(
-                keypoints: list[Keypoint | None] | None) -> float:
-            return (sum(
-                keypoint.score for keypoint in keypoints
-                if keypoint is not None) if keypoints is not None else 0.0)
+        def total_score(keypoints: list[Keypoint]) -> float:
+            return sum(keypoint.score for keypoint in keypoints)
 
         pose_results = []
 
         for instance in keypoints_info:
-            body_keypoints = format_keypoint_part(
-                instance[:18]) or ([None] * 18)
-            left_hand = format_keypoint_part(instance[92:113])
-            right_hand = format_keypoint_part(instance[113:134])
-            face = format_keypoint_part(instance[24:92])
-
+            body_keypoints = format_keypoint_part(instance[:18])
+            left_hand_keypoints = format_keypoint_part(instance[92:113])
+            right_hand_keypoints = format_keypoint_part(instance[113:134])
+            face_keypoints = format_keypoint_part(instance[24:92])
+ 
             # Openpose face consists of 70 points in total, while RTMPose only
-            # provides 68 points. Padding the last 2 points.
-            if face is not None:
-                # left eye
-                face.append(body_keypoints[14])
-                # right eye
-                face.append(body_keypoints[15])
+            # provides 68 points. Padding the last 2 points with body eye keypoints
+            # left eye (body keypoint 14)
+            face_keypoints.append(body_keypoints[14])
+            # right eye (body keypoint 15)
+            face_keypoints.append(body_keypoints[15])
 
-            body = BodyResult(body_keypoints, total_score(body_keypoints),
-                              len(body_keypoints))
+            body = BodyResult(body_keypoints, total_score(body_keypoints), len(body_keypoints))
+            left_hand = HandResult(left_hand_keypoints)
+            right_hand = HandResult(right_hand_keypoints)
+            face = FaceResult(face_keypoints)
+            
             pose_results.append(PoseResult(body, left_hand, right_hand, face))
 
         return pose_results
