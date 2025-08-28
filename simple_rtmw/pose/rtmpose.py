@@ -1,29 +1,35 @@
-from typing import List, Tuple
-
 import numpy as np
+from pathlib import Path
 
 from simple_rtmw.base import BaseTool
-from simple_rtmw.pose.post import convert_coco_to_openpose, get_simcc_maximum
+from simple_rtmw.pose.post import get_simcc_maximum
 from simple_rtmw.pose.pre import bbox_xyxy2cs, top_down_affine
 
 
 class RTMPose(BaseTool):
+    def __init__(
+        self,
+        model_url: str,
+        model_base_dir: Path,
+        device: str,
+        model_input_size: tuple = (288, 384),    # rtmw-xl input size defined in the model
+        mean: tuple = (123.675, 116.28, 103.53),  # imagenet convention mean
+        std: tuple = (58.395, 57.12, 57.375),  # imagenet convention std
+    ):
+        super().__init__(
+            model_url,
+            model_base_dir,
+            model_input_size,
+            device=device,
+        )
+        
+        self.mean = np.array(mean)
+        self.std = np.array(std)
+        self.model_input_size = np.array(model_input_size)
 
-    def __init__(self,
-                 onnx_model: str,
-                 model_input_size: tuple = (288, 384),
-                 mean: tuple = (123.675, 116.28, 103.53),
-                 std: tuple = (58.395, 57.12, 57.375),
-                 to_openpose: bool = False,
-                 backend: str = 'onnxruntime',
-                 device: str = 'cpu'):
-        super().__init__(onnx_model, model_input_size, mean, std, backend,
-                         device)
-        self.to_openpose = to_openpose
-
-    def __call__(self, image: np.ndarray, bboxes: list = []):
-        if len(bboxes) == 0:
-            bboxes = [[0, 0, image.shape[1], image.shape[0]]]
+    def __call__(self, image: np.ndarray, bboxes: list[np.ndarray] | None = None) -> tuple[np.ndarray, np.ndarray]:
+        if bboxes is None:  # if bboxes is None, use the whole image
+            bboxes = [np.array([0, 0, image.shape[1], image.shape[0]])]
 
         keypoints, scores = [], []
         for bbox in bboxes:
@@ -36,18 +42,20 @@ class RTMPose(BaseTool):
 
         keypoints = np.concatenate(keypoints, axis=0)
         scores = np.concatenate(scores, axis=0)
-
-        if self.to_openpose:
-            keypoints, scores = convert_coco_to_openpose(keypoints, scores)
-
         return keypoints, scores
 
-    def preprocess(self, img: np.ndarray, bbox: list):
+    def preprocess(
+            self, 
+            img: np.ndarray, 
+            bbox: np.ndarray,
+            bbox_padding_factor: float = 1.25
+        ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Do preprocessing for RTMPose model inference.
 
         Args:
-            img (np.ndarray): Input image in shape.
-            bbox (list):  xyxy-format bounding box of target.
+            img: Input image in shape.
+            bbox:  xyxy-format bounding box of target.
+            bbox_padding_factor: float = 1.25
 
         Returns:
             tuple:
@@ -55,41 +63,41 @@ class RTMPose(BaseTool):
             - center (np.ndarray): Center of image.
             - scale (np.ndarray): Scale of image.
         """
-        bbox = np.array(bbox)
-
         # get center and scale
-        center, scale = bbox_xyxy2cs(bbox, padding=1.25)
+        center, scale = bbox_xyxy2cs(bbox, padding=bbox_padding_factor)
 
         # do affine transformation
-        resized_img, scale = top_down_affine(self.model_input_size, scale,
-                                             center, img)
+        resized_img, scale = top_down_affine(
+            self.model_input_size, 
+            scale, 
+            center, 
+            img,
+        )
+
         # normalize image
         if self.mean is not None:
-            self.mean = np.array(self.mean)
-            self.std = np.array(self.std)
             resized_img = (resized_img - self.mean) / self.std
 
         return resized_img, center, scale
 
     def postprocess(
-            self,
-            outputs: List[np.ndarray],
-            center: Tuple[int, int],
-            scale: Tuple[int, int],
-            simcc_split_ratio: float = 2.0) -> Tuple[np.ndarray, np.ndarray]:
+        self,
+        outputs: list[np.ndarray],
+        center: np.ndarray,
+        scale: np.ndarray,
+        simcc_split_ratio: float = 2.0,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Postprocess for RTMPose model output.
 
         Args:
-            outputs (np.ndarray): Output of RTMPose model.
-            model_input_size (tuple): RTMPose model Input image size.
-            center (tuple): Center of bbox in shape (x, y).
-            scale (tuple): Scale of bbox in shape (w, h).
+            outputs: Output of RTMPose model.
+            center: Center of the image
+            scale: Scale of image
             simcc_split_ratio (float): Split ratio of simcc.
 
         Returns:
-            tuple:
-            - keypoints (np.ndarray): Rescaled keypoints.
-            - scores (np.ndarray): Model predict scores.
+            - keypoints: Rescaled keypoints.
+            - scores: Model predict scores.
         """
         # decode simcc
         simcc_x, simcc_y = outputs

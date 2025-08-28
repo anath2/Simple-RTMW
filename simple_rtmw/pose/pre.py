@@ -50,7 +50,6 @@ def get_warp_matrix(
     Returns:
         np.ndarray: A 2x3 transformation matrix
     """
-
     src_w = scale[0]
     dst_w = output_size[0]
     dst_h = output_size[1]
@@ -73,17 +72,17 @@ def get_warp_matrix(
     dst[2, :] = _get_point_3(dst[0, :], dst[1, :])
 
     # affine transform matrix
-    warp_mat = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+    warp_mat = cv2.getAffineTransform(np.float32(src), np.float32(dst))  # type: ignore 
     return warp_mat
 
 
 def top_down_affine(
-    input_size: tuple[int, int],
-    bbox_scale: tuple[int, int],
-    bbox_center: tuple[int, int],
+    input_size: np.ndarray,
+    bbox_scale: np.ndarray,
+    bbox_center: np.ndarray,
     img: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Get the bbox image as the model input by affine transform.
+    """Get the bbox image as the model input by anp.ndarray.
 
     Args:
         input_size: The input size of the model.
