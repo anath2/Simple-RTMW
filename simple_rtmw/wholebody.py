@@ -36,6 +36,8 @@ class Wholebody:
 
     def __call__(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         bboxes = self.det_model(image)
+        # Convert to list of bounding boxes
+        bboxes = [bbox for bbox in bboxes] if len(bboxes) > 0 else None
         keypoints, scores = self.pose_model(image, bboxes=bboxes)
 
         return keypoints, scores
