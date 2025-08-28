@@ -11,7 +11,7 @@ class Keypoint:
 
 @dataclass(slots=True)
 class BodyResult:
-    keypoints: list[Keypoint | None]
+    keypoints: list[Keypoint]
     total_score: float = 0.0
     total_parts: int = 0
 
@@ -29,6 +29,6 @@ class FaceResult:
 @dataclass(slots=True)
 class PoseResult:
     body: BodyResult
-    left_hand: HandResult | None
-    right_hand: HandResult | None
-    face: FaceResult | None
+    left_hand: HandResult
+    right_hand: HandResult
+    face: FaceResult
