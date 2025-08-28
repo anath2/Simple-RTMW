@@ -24,7 +24,7 @@ class YOLOX(BaseTool):
         self.nms_thr = nms_thr
         self.score_thr = score_thr
 
-    def __call__(self, image: np.ndarray):
+    def __call__(self, image: np.ndarray) -> np.ndarray:
         image, ratio = self.preprocess(image)
         outputs = self.inference(image)[0]
         results = self.postprocess(outputs, ratio)
