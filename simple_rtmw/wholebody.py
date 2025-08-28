@@ -1,9 +1,10 @@
 import logging
 import numpy as np
+from pathlib import Path
 
 from simple_rtmw.detection import Detector
 from simple_rtmw.pose import PoseEstimator
-from simple_rtmw.types import BodyResult, Keypoint, PoseResult
+from simple_rtmw.types import BodyResult, Keypoint, PoseResult, FaceResult, HandResult
 
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 CONFIG = {
     'detector': 'http://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip',
     'detector_input_size': (640, 640),
-    'pose_estimator': 'http://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-x-l_simcc-cocktail14_270e-384x288_20231122.zip',  # noqa
+    'pose_estimator': 'http://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-x-l_simcc-cocktail14_270e-384x288_20231122.zip',
     'pose_estimator_input_size': (288, 384),
     'backend': 'onnxruntime',
     'device': 'mps',
@@ -19,27 +20,21 @@ CONFIG = {
 
 
 class Wholebody:
+    def __init__(self, device: str = 'cpu'):
+        self.det_model = Detector(
+            model_url=CONFIG['detector'], 
+            model_base_dir=Path('./models/detector'),   
+            model_input_size=CONFIG['detector_input_size'],
+            device=device
+        )
+        self.pose_model = PoseEstimator(
+            model_url=CONFIG['pose_estimator'],
+            model_base_dir=Path('./models/pose_estimator'),
+            model_input_size=CONFIG['pose_estimator_input_size'],
+            device=device
+        )
 
-    def __init__(self,
-        det: str = None,
-        det_input_size: tuple = (640, 640),
-        pose: str = None,
-        pose_input_size: tuple = (288, 384),
-        backend: str = 'onnxruntime',
-        device: str = 'cpu',
-    ):
-
-        self.det_model = Detector(det,
-                               model_input_size=det_input_size,
-                               backend=backend,
-                               device=device)
-        self.pose_model = PoseEstimator(pose,
-                                  model_input_size=pose_input_size,
-                                  to_openpose=False,
-                                  backend=backend,
-                                  device=device)
-
-    def __call__(self, image: np.ndarray):
+    def __call__(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         bboxes = self.det_model(image)
         keypoints, scores = self.pose_model(image, bboxes=bboxes)
 
