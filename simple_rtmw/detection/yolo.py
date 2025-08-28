@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
 from simple_rtmw.base import BaseTool
@@ -6,14 +8,16 @@ from simple_rtmw.base import BaseTool
 class YOLOX(BaseTool):
     def __init__(
         self,
-        onnx_model: str,
-        model_input_size: tuple = (640, 640),
+        model_url: str,
+        model_base_dir: Path,
+        model_input_size: tuple[int, int] = (640, 640),
         nms_thr: float = 0.45,
         score_thr: float = 0.7,
         device: str = 'cpu',
     ):
         super().__init__(
-            onnx_model,
+            model_url,
+            model_base_dir,
             model_input_size,
             device=device,
         )
@@ -73,6 +77,7 @@ class YOLOX(BaseTool):
     ) -> np.ndarray:
         """
         Postprocesses YOLOX model outputs to produce final bounding boxes in original image coordinates.
+        Assumes batch size of 1.
 
         Args:
             outputs: Raw outputs from the YOLOX model. 
@@ -85,8 +90,11 @@ class YOLOX(BaseTool):
             Array of final bounding boxes after thresholding and rescaling.
             Shape: (num_boxes, 4). Each box is [x1, y1, x2, y2] in original image coordinates.
         """
-        final_boxes = outputs[0, :, :4]
-        final_scores = outputs[0, :, 4]
-        final_boxes /= ratio
-        final_boxes = final_boxes[final_scores > self.score_thr].astype(np.int32)
+        # Split boxes and scores
+        detections = outputs[0]
+        final_boxes = detections[:, :4]
+        final_scores = detections[:, 4]
+
+        final_boxes_scaled = final_boxes / ratio
+        final_boxes = final_boxes_scaled[final_scores > self.score_thr].astype(np.int32)
         return final_boxes
