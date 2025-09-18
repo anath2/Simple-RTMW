@@ -48,6 +48,7 @@ lint.ignore = [
 [lint.per-file-ignores]
 "**/test_*.py" = ["D"]
 "**/tests/*.py" = ["D"]
+"tests/**/*.py" = ["D"]
 
 [lint.pydocstyle]
 convention = "google"
