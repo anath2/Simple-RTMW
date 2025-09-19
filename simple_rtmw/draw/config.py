@@ -12,7 +12,8 @@ class DrawConfig:
 @dataclass
 class DetectionConfig:
     """Configuration for drawing detection results."""
-    pass
+    box_color: tuple[int, int, int] = (0, 255, 0)  # BGR green
+    box_thickness: int = 2
 
 
 @dataclass
