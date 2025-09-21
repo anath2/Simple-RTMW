@@ -60,6 +60,10 @@ annotated_image = draw_annotated_image(
 )
 ```
 
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
+
 ## Acknowledgments
 
 - [RTMPose](https://github.com/open-mmlab/mmpose) for pose estimation models
