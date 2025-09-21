@@ -1,5 +1,6 @@
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 from simple_rtmw.base import BaseTool
 from simple_rtmw.pose.post import get_simcc_maximum
@@ -22,7 +23,7 @@ class RTMPose(BaseTool):
             model_input_size,
             device=device,
         )
-        
+
         self.mean = np.array(mean)
         self.std = np.array(std)
         self.model_input_size = np.array(model_input_size)
@@ -45,10 +46,10 @@ class RTMPose(BaseTool):
         return keypoints, scores
 
     def preprocess(
-            self, 
-            img: np.ndarray, 
+            self,
+            img: np.ndarray,
             bbox: np.ndarray,
-            bbox_padding_factor: float = 1.25
+            bbox_padding_factor: float = 1.25,
         ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Do preprocessing for RTMPose model inference.
 
@@ -68,9 +69,9 @@ class RTMPose(BaseTool):
 
         # do affine transformation
         resized_img, scale = top_down_affine(
-            self.model_input_size, 
-            scale, 
-            center, 
+            self.model_input_size,
+            scale,
+            center,
             img,
         )
 

@@ -7,7 +7,7 @@ import numpy as np
 
 from simple_rtmw.detection import Detector
 from simple_rtmw.pose import PoseEstimator
-from simple_rtmw.types import BodyResult, FaceResult, HandResult, Keypoint, PoseResult
+from simple_rtmw.types import BodyResult, FaceResult, FootResult, HandResult, Keypoint, PoseResult
 
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class Wholebody:
         return keypoints, scores
 
     @staticmethod
-    def format_result(keypoints_info: np.ndarray) -> list[PoseResult]:
+    def format_result(keypoints_info: np.ndarray, score_threshold: float = 0.3) -> list[PoseResult]:
         """Format raw keypoints into structured pose results.
 
         Converts raw keypoint arrays into structured PoseResult objects
@@ -77,12 +77,11 @@ class Wholebody:
             keypoints_info: Raw keypoints array with shape (N, 134, 3) where
                 N is the number of detected persons, 134 is the total number
                 of keypoints, and 3 represents (x, y, score).
+            score_threshold: Minimum score threshold for keypoints to be included.
 
         Returns:
             List of PoseResult objects for each detected person.
         """
-        score_threshold = 0.3
-
         def create_null_keypoint(idx: int) -> Keypoint:
             return Keypoint(np.nan, np.nan, 0.0, idx)
 
@@ -92,29 +91,42 @@ class Wholebody:
                 for i, (x, y, score) in enumerate(part)
             ]
 
-        def total_score(keypoints: list[Keypoint]) -> float:
-            return sum(keypoint.score for keypoint in keypoints)
-
         pose_results = []
 
         for instance in keypoints_info:
-            body_keypoints = format_keypoint_part(instance[:18])
-            left_hand_keypoints = format_keypoint_part(instance[92:113])
-            right_hand_keypoints = format_keypoint_part(instance[113:134])
-            face_keypoints = format_keypoint_part(instance[24:92])
+            # COCO-WholeBody format: 133 keypoints total
+            # Body: indices 0-16 (17 keypoints)
+            # Lef Foot: indices 17-19
+            # Right Foot: indices 20-22
+            # Face: indices 23-90 (68 keypoints)
+            # Left hand: indices 91-111 (21 keypoints)
+            # Right hand: indices 112-132 (21 keypoints)
+            body_keypoints = format_keypoint_part(instance[:17])
+            left_foot_keypoints = format_keypoint_part(instance[17:20])
+            right_foot_keypoints = format_keypoint_part(instance[20:23])
+            face_keypoints = format_keypoint_part(instance[23:91])
+            left_hand_keypoints = format_keypoint_part(instance[91:112])
+            right_hand_keypoints = format_keypoint_part(instance[112:133])
 
             # Openpose face consists of 70 points in total, while RTMPose only
             # provides 68 points. Padding the last 2 points with body eye keypoints
-            # left eye (body keypoint 14)
-            face_keypoints.append(body_keypoints[14])
-            # right eye (body keypoint 15)
-            face_keypoints.append(body_keypoints[15])
+            # left eye (body keypoint 15 in COCO format)
+            if len(body_keypoints) > 15:
+                face_keypoints.append(body_keypoints[15])
+            else:
+                face_keypoints.append(create_null_keypoint(68))
+            # right eye (body keypoint 16 in COCO format)
+            if len(body_keypoints) > 16:
+                face_keypoints.append(body_keypoints[16])
+            else:
+                face_keypoints.append(create_null_keypoint(69))
 
-            body = BodyResult(body_keypoints, total_score(body_keypoints), len(body_keypoints))
+            body = BodyResult(body_keypoints)
             left_hand = HandResult(left_hand_keypoints)
             right_hand = HandResult(right_hand_keypoints)
             face = FaceResult(face_keypoints)
-
-            pose_results.append(PoseResult(body, left_hand, right_hand, face))
+            left_foot = FootResult(left_foot_keypoints)
+            right_foot = FootResult(right_foot_keypoints)
+            pose_results.append(PoseResult(body, left_hand, right_hand, face, left_foot, right_foot))
 
         return pose_results
