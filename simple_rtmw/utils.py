@@ -1,3 +1,5 @@
+"""utility functions for downloading checkpoints."""
+
 import shutil
 import sys
 import tempfile
@@ -9,8 +11,9 @@ from tqdm import tqdm
 
 
 def extract_zip(zip_file_path: Path, extract_to_path: Path):
-    """Extracts contents of the zip file to a path
-    ARGS:
+    """Extracts contents of the zip file to a path.
+
+    Args:
         zip_file_path: Path of the zip file
         extract_to_path: Path of the extracted contents.
     """
@@ -22,19 +25,19 @@ def extract_zip(zip_file_path: Path, extract_to_path: Path):
 
 
 def download_url_to_file(
-        url,
+        url: str,
         dst: Path,
-        progress=True,
-        download_chunk_size=8192,
+        progress: bool = True,
+        download_chunk_size: int = 8192,
     ):
     """Download object at the given URL to a local path.
 
     Args:
         url: URL of the object to download
-        dest: Path where the final result would be saved
+        dst: Path where the final result would be saved
         progress: whether or not to display a progress bar to stderr Defaults to True.
+        download_chunk_size: Size of the chunks to download.
     """
-    # Start the request with stream=True to get headers first
     headers = {'User-Agent': 'mmlmtools'}
     response = requests.get(url, headers=headers, stream=True)
     response.raise_for_status()
@@ -47,7 +50,9 @@ def download_url_to_file(
 
     # Save it to a temp file and rename it atomically
     dst = dst.expanduser().absolute()
-    f = tempfile.NamedTemporaryFile(delete=False, dir=dst.parent)
+
+    with tempfile.NamedTemporaryFile(mode='wb', dir=dst.parent, delete=False) as f:
+        temp_file = Path(f.name)
 
     try:
         with tqdm(
@@ -77,6 +82,7 @@ def download_checkpoint(
     progress: bool = True,
 ) -> str:
     """Download the checkpoint from the given URL.
+
     If an end2end.onnx file already exists in dst_dir,
     it will be returned directly.
 

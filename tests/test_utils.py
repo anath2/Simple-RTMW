@@ -1,21 +1,22 @@
 import os
+from pathlib import Path
+
 import pytest
+
 from simple_rtmw.utils import download_checkpoint
 
 
 @pytest.fixture(scope="module")
-def url() -> str: 
-    return'http://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip'
-  
+def url() -> str:
+    return'https://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip'
+
 
 @pytest.mark.network
-def test_download_checkpoint_end_to_end(url, tmp_path):
-    result_path = download_checkpoint(url, tmp_path, progress=False)
-    
-    # Should return path to extracted onnx file
+def test_download_checkpoint_end_to_end(url: str, tmp_path: str):
+    result_path = download_checkpoint(url, Path(tmp_path), progress=False)
     assert result_path.endswith('.onnx')
-    assert os.path.exists(result_path)
-    
+    assert result_path.exists()
+
     # Should create the onnx file in the destination directory
     onnx_files = [f for f in os.listdir(tmp_path) if f.endswith('.onnx')]
     assert len(onnx_files) == 1

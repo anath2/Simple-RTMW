@@ -1,19 +1,19 @@
-import pytest
-import requests
 from pathlib import Path
 
 import cv2
 import numpy as np
+import pytest
+import requests
+
 from simple_rtmw.detection import Detector
 
 
-pytest.fixture(scope='module')
+@pytest.fixture(scope='module')
 def image() -> np.ndarray:
     url = 'https://live.staticflickr.com/141/401685338_759da4a49a.jpg'
     image = requests.get(url).content
     img_array = np.asarray(bytearray(image), dtype=np.uint8)
-    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-    return img
+    return cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
 
 @pytest.fixture(scope='module')
@@ -27,13 +27,13 @@ def model_base_dir() -> Path:
 
 
 @pytest.mark.gpu
-def test_detector_e2e(image, model_url, model_base_dir):
+def test_detector_e2e(image: np.ndarray, model_url: str, model_base_dir: Path) -> None:
     """End-to-end tests for detector"""
     detector = Detector(
-        model_url=model_url, 
+        model_url=model_url,
         model_base_dir=model_base_dir,
         model_input_size=(640, 640),
-        device='mps'
+        device='mps',
     )
     boxes = detector(image)
     assert isinstance(boxes, np.ndarray)
