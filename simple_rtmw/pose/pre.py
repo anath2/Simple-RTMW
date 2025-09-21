@@ -4,7 +4,7 @@ import numpy as np
 
 
 def bbox_xyxy2cs(bbox: np.ndarray, padding: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
-    """Transform the bbox format from (x,y,w,h) into (center, scale)
+    """Transform the bbox format from (x,y,w,h) into (center, scale).
 
     Args:
         bbox: Bounding box(es) in shape (4,) or (n, 4), formatted as (left, top, right, bottom)
@@ -75,8 +75,7 @@ def get_warp_matrix(
     dst[2, :] = _get_point_3(dst[0, :], dst[1, :])
 
     # affine transform matrix
-    warp_mat = cv2.getAffineTransform(np.float32(src), np.float32(dst))  # type: ignore 
-    return warp_mat
+    return cv2.getAffineTransform(np.float32(src), np.float32(dst))  # type: ignore
 
 
 def top_down_affine(
@@ -106,7 +105,7 @@ def top_down_affine(
     bbox_scale = np.where(
         b_w > b_h * aspect_ratio,
         np.hstack([b_w, b_w / aspect_ratio]),
-        np.hstack([b_h * aspect_ratio, b_h])
+        np.hstack([b_h * aspect_ratio, b_h]),
     )
 
     # get the affine matrix
@@ -118,10 +117,10 @@ def top_down_affine(
 
     # do affine transform
     img = cv2.warpAffine(
-        img, 
-        warp_mat, 
-        warp_size, 
-        flags=cv2.INTER_LINEAR
+        img,
+        warp_mat,
+        warp_size,
+        flags=cv2.INTER_LINEAR,
     )
 
     return img, bbox_scale

@@ -91,9 +91,6 @@ class Wholebody:
                 for i, (x, y, score) in enumerate(part)
             ]
 
-        def total_score(keypoints: list[Keypoint]) -> float:
-            return sum(keypoint.score for keypoint in keypoints)
-
         pose_results = []
 
         for instance in keypoints_info:
@@ -124,7 +121,7 @@ class Wholebody:
             else:
                 face_keypoints.append(create_null_keypoint(69))
 
-            body = BodyResult(body_keypoints, total_score(body_keypoints), len(body_keypoints))
+            body = BodyResult(body_keypoints)
             left_hand = HandResult(left_hand_keypoints)
             right_hand = HandResult(right_hand_keypoints)
             face = FaceResult(face_keypoints)
