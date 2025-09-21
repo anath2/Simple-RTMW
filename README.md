@@ -2,6 +2,22 @@
 
 Multi-person whole-body pose estimation using ONNX models with RTMPose and YOLOX detectors.
 
+## Installation
+
+Install from PyPI:
+
+```bash
+pip install simple-rtmw
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/anath2/simple-rtmw
+cd simple-rtmw
+pip install .
+```
+
 ## Quick Start
 
 ```python
@@ -32,6 +48,7 @@ cv2.imwrite("output.jpg", annotated_image)
 
 ## Features
 
+- **Easy to use**: No depencencies except OpenCV, ONNX and Numpy
 - **Whole-body detection**: 17 body + 68 face + 21 hand + 3 foot keypoints per person
 - **Multi-platform**: CPU, CUDA, MPS (Apple Silicon) support
 - **Flexible visualization**: Customizable drawing with detection boxes and pose annotations
