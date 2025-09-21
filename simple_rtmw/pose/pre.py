@@ -58,10 +58,13 @@ def get_warp_matrix(
     src_dir = np.array([0., src_w * -0.5])
     dst_dir = np.array([0., dst_w * -0.5])
 
-    # src points
+    # src points (refer to MMPose/HRNet affine formulation)
+    # The first point is the bbox center; the second is shifted by the
+    # direction vector corresponding to half bbox width; the third is
+    # derived to form a right-angled triangle.
     src = np.zeros((3, 2), dtype=np.float32)
-    src[0, :] = center + scale
-    src[1, :] = center + src_dir + scale
+    src[0, :] = center
+    src[1, :] = center + src_dir
     src[2, :] = _get_point_3(src[0, :], src[1, :])
 
     # dst points
