@@ -42,7 +42,7 @@ lint.exclude = [
 lint.ignore = [
     "D107",
     "D105",
-    "B008",  # Allow function calls in argument defaults (FastAPI Depends pattern)
+    "N806",  # Allow uppercase variables (common in vector algebra: N, K, H, W, etc.)
 ]
 
 [lint.per-file-ignores]
