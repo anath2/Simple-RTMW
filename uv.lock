@@ -744,7 +744,7 @@ wheels = [
 
 [[package]]
 name = "simple-rtmw"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
