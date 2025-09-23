@@ -50,18 +50,22 @@ cv2.imwrite("output.jpg", annotated_image)
 
 ## Example Results
 
-Here's what the pose estimation looks like in action:
-
-**Input Image:**
-![Input](docs/images/input.jpg)
-
-**Output with Detection Boxes and Pose Estimation:**
-![Output](docs/images/output.jpg)
+<table>
+<tr>
+<td align="center"><b>Input Image</b></td>
+<td align="center"></td>
+<td align="center"><b>Output Image</b></td>
+</tr>
+<tr>
+<td><img src="docs/images/input.jpg" width="300" alt="Input"></td>
+<td align="center" style="font-size: 2em; padding: 0 20px;">➡️</td>
+<td><img src="docs/images/output.jpg" width="300" alt="Output"></td>
+</tr>
+</table>
 
 ## Features
 
 - **Easy to use**: No depencencies except OpenCV, ONNX and Numpy
-- **Whole-body detection**: 17 body + 68 face + 21 hand + 3 foot keypoints per person
 - **Multi-platform**: CPU, CUDA, MPS (Apple Silicon) support
 - **Flexible visualization**: Customizable drawing with detection boxes and pose annotations
 
