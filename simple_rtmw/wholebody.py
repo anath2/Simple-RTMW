@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 CONFIG = {
     "detector": "http://download.openmmlab.com/mmpose/v1/projects/rtmposev1/onnx_sdk/yolox_m_8xb8-300e_humanart-c2c7a14a.zip",
     "detector_input_size": (640, 640),
+    "detection_score_threshold": 0.7,
+    "detection_nms_threshold": 0.45,
     "pose_estimator": "http://download.openmmlab.com/mmpose/v1/projects/rtmw/onnx_sdk/rtmw-dw-x-l_simcc-cocktail14_270e-384x288_20231122.zip",
     "pose_estimator_input_size": (288, 384),
     "backend": "onnxruntime",
@@ -40,6 +42,8 @@ class Wholebody:
             model_url=CONFIG["detector"],
             model_base_dir=models_base_dir / "detector",
             model_input_size=CONFIG["detector_input_size"],
+            nms_thr=CONFIG["detection_nms_threshold"],
+            score_thr=CONFIG["detection_score_threshold"],
             device=device,
         )
         self.pose_model = PoseEstimator(
